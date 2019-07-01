@@ -1,5 +1,7 @@
 const prompts = require('prompts');
 const axios = require('axios');
+const request = require('request');
+
 (async () => {
     const resp = await prompts({
         type: 'number',
@@ -16,30 +18,43 @@ const axios = require('axios');
         emailId:'subhro74@gmail.com',
         password:'Subhro1990'
     }
-         
-    axios.create()
-    axios.get('localhost:8080/hello')
+    console.log(JSON.stringify(formData))
+    axios.get('http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/hello')
         .then((resp)=>{
-            console.log(resp);
+            console.log(resp.data);
         })
         .catch((err)=>{
             console.log(err);
+        });
+
+        request.post({url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin',form:{
+            emailId:'subhro74@gmail.com',
+            password:'Subhro1990'
+        }}, function(err,resp,body){
+            console.log('--GET');
+            console.log('err', err);
+            console.log('Resp----> ', resp);
+            console.log('Body ----> ', body);
         })
-    // axios.post('localhost:8080/signin', formData)
-    //     .then((resp)=>{
-    //         console.log(resp)
-    //     })
-    //     .catch((err)=>{
-    //         console.log(err);
-    //         // var errorStatus = null;
-            // if (!err.response) {
-            //     // network error
-            //     errorStatus = 'Error: Network Error';
-            //     console.log('here',errorStatus);
-            // } else {
-            //     errorStatus = err.response.data.message;
-            //     console.log('here 2',errorStatus);
-            // }   
+        // request.post({url: 'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin', 
+        // form: {emailId:'subhro74@gmail.com', password:'Subhro1990'}}, function(err, resp, body){
+        //     console.log('error--->',err);
+        //     console.log('Resp ---->',resp);
+        //     console.log(body)
         // })
+    // axios({
+    //     method: 'post',
+    //     url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin',
+    //     data:{
+    //         emailId:'subhro74@gmail.com',
+    //         password:'Subhro1990'
+    //         }
+    //     })
+    //     .then((resp)=>{
+    //         console.log(resp.data);
+    //     }).catch((err)=>{
+    //         console.log(err);
+    //     });
+
 })();
 
