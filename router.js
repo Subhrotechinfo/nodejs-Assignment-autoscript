@@ -94,11 +94,11 @@ router.get('/signin', (req, res)=>{
                             }
                         })
                         .catch((err)=>{
-                            reject(err,'something went wrong while fetching the details');
+                            reject('something went wrong while fetching the details');
                         });
                 }else {
+                    reject({err:'invalid emailid format'});
                 }
-                reject({err:'invalid emailid format'});
                 
             }else {
                 reject('email parameter is missing');

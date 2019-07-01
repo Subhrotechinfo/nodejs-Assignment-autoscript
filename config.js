@@ -3,7 +3,7 @@ config.port = 8080;
 config.allowedCorsOrigin = "*";
 config.env = "dev";
 config.db = {
-    uri: 'mongodb://127.0.0.1:27017/assignment'
+    uri: 'mongodb+srv://test:Qoc9AYACNtBhRsK9@assignmentdb-fuyzc.mongodb.net/test?retryWrites=true&w=majority'
 }
 module.exports = {
     port: config.port,
@@ -11,10 +11,8 @@ module.exports = {
     environment: config.env,
     dbStrng: config.db.uri
 }
-
-
-
-
+// test
+// Qoc9AYACNtBhRsK9
 
 
 

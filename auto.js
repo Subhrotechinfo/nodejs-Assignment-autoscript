@@ -1,12 +1,5 @@
 const prompts = require('prompts');
-
-// let script = ()=> {
-//     // var arg = process.argv[2];
-//     // console.log('-->',arg);
-
-// }
-// script();
-
+const axios = require('axios');
 (async () => {
     const resp = await prompts({
         type: 'number',
@@ -16,14 +9,37 @@ const prompts = require('prompts');
     });
     let apiHitTimes = resp.userInput;
     // console.log( typeof  apiHitTimes);
-    for(let hits = 0 ;hits< apiHitTimes; hits++){
-        
+    // for(let hits = 0 ;hits< apiHitTimes; hits++){
+    //     // make api call apiHitTimes
+    // }
+    let formData = {
+        emailId:'subhro74@gmail.com',
+        password:'Subhro1990'
     }
-    
-
-
-
-
-
+         
+    axios.create()
+    axios.get('localhost:8080/hello')
+        .then((resp)=>{
+            console.log(resp);
+        })
+        .catch((err)=>{
+            console.log(err);
+        })
+    // axios.post('localhost:8080/signin', formData)
+    //     .then((resp)=>{
+    //         console.log(resp)
+    //     })
+    //     .catch((err)=>{
+    //         console.log(err);
+    //         // var errorStatus = null;
+            // if (!err.response) {
+            //     // network error
+            //     errorStatus = 'Error: Network Error';
+            //     console.log('here',errorStatus);
+            // } else {
+            //     errorStatus = err.response.data.message;
+            //     console.log('here 2',errorStatus);
+            // }   
+        // })
 })();
 

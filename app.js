@@ -1,10 +1,12 @@
 const express =require('express');
 const mongoose  = require('mongoose');
+const MongoClient = require('mongodb');
 const http = require('http');
 const bodyParser = require('body-parser')
 const randomize  = require('randomatic')
 const  { port , dbStrng }  = require('./config');
 const routers = require('./router');
+let client = null;
 
 //create an instance of express
 const app = express();
@@ -22,21 +24,15 @@ app.get('/hello',(req, res)=>{
 
 let server =  http.createServer(app);
 server.listen(port, ()=>{
+    mongoose.connect(dbStrng, {useNewUrlParser: true})
+    .then((result)=>{
+        if(result){
+            console.log('Connected to Atlas Mongodb');
+        }
+    }).catch((err)=>console.log(err));
     console.log(`Express App listening on port ${port}`);
-    let db = mongoose.connect(dbStrng, {useNewUrlParser: true});
-    console.log('Connected to Mongodb');
+    
 })
 
-mongoose.connection.on('error', (err)=>{
-    console.log('Database Connection Error');
-    console.log(err);
-});
 
-mongoose.connection.on('open', (err)=>{
-    if(err){
-        console.log('Mongoose connection error');
-    }else {
-        console.log('Database Connection open');
-    }
-});
 
