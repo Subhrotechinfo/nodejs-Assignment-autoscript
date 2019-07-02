@@ -1,9 +1,6 @@
 const prompts = require('prompts');
 const axios = require('axios');
 const random = require('randomatic');
-const crypto = require('crypto');
-const {encrypt, decrypt} = require('./cipherDecipher');
-
 
 (async () => {
     const resp = await prompts({
@@ -14,16 +11,13 @@ const {encrypt, decrypt} = require('./cipherDecipher');
     });
     let apiHitTimes = resp.userInput;
 
-    let val = encrypt('Subhro chatterjee');
-    console.log('Encrypt---->', val);
-
-    console.log('Decrypt ---->',decrypt(val));
     for(let hits = 0 ;hits< apiHitTimes; hits++){
         let formData = {
             emailId:random('Aa0',8)+'@gmail.com',
             password:random('Aa0',10),
             name:random('Aa0',12)
         }
+        console.log('Data generated--> ', formData);
         axios({
             method: 'post',
             url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signup',
