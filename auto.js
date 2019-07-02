@@ -1,6 +1,9 @@
 const prompts = require('prompts');
 const axios = require('axios');
-const request = require('request');
+const random = require('randomatic');
+const crypto = require('crypto');
+const {encrypt, decrypt} = require('./cipherDecipher');
+
 
 (async () => {
     const resp = await prompts({
@@ -10,15 +13,29 @@ const request = require('request');
         validate: userInput => userInput < 1 ? 'Please enter a number': true
     });
     let apiHitTimes = resp.userInput;
-    // console.log( typeof  apiHitTimes);
-    // for(let hits = 0 ;hits< apiHitTimes; hits++){
-    //     // make api call apiHitTimes
-    // }
-    let formData = {
-        emailId:'subhro74@gmail.com',
-        password:'Subhro1990'
-    }
-    console.log(JSON.stringify(formData))
+
+    let val = encrypt('Subhro chatterjee');
+    console.log('Encrypt---->', val);
+
+    console.log('Decrypt ---->',decrypt(val));
+    for(let hits = 0 ;hits< apiHitTimes; hits++){
+        let formData = {
+            emailId:random('Aa0',8)+'@gmail.com',
+            password:random('Aa0',10),
+            name:random('Aa0',12)
+        }
+        axios({
+            method: 'post',
+            url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signup',
+            data:formData
+            })
+            .then((resp)=>{
+                console.log(resp.data);
+            }).catch((err)=>{
+                console.log(err);
+            });
+    }//End For
+    
     axios.get('http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/hello')
         .then((resp)=>{
             console.log(resp.data);
@@ -26,35 +43,4 @@ const request = require('request');
         .catch((err)=>{
             console.log(err);
         });
-
-        request.post({url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin',form:{
-            emailId:'subhro74@gmail.com',
-            password:'Subhro1990'
-        }}, function(err,resp,body){
-            console.log('--GET');
-            console.log('err', err);
-            console.log('Resp----> ', resp);
-            console.log('Body ----> ', body);
-        })
-        // request.post({url: 'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin', 
-        // form: {emailId:'subhro74@gmail.com', password:'Subhro1990'}}, function(err, resp, body){
-        //     console.log('error--->',err);
-        //     console.log('Resp ---->',resp);
-        //     console.log(body)
-        // })
-    // axios({
-    //     method: 'post',
-    //     url:'http://ec2-13-235-32-210.ap-south-1.compute.amazonaws.com:8080/signin',
-    //     data:{
-    //         emailId:'subhro74@gmail.com',
-    //         password:'Subhro1990'
-    //         }
-    //     })
-    //     .then((resp)=>{
-    //         console.log(resp.data);
-    //     }).catch((err)=>{
-    //         console.log(err);
-    //     });
-
 })();
-

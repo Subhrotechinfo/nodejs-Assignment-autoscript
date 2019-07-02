@@ -1,16 +1,19 @@
 const jwt  = require('jsonwebtoken');
 const moment = require('moment');
-let secretkey = 'idontknow';
+let secretkey = 'idfdfjnjnj';
+const {decrypt} = require('./cipherDecipher')
 
 module.exports.generateToken = (data) => {
-    // console.log(data)
+    console.log('Trying to generate token',decrypt(data.emailId))
+    var email = decrypt(data.emailId);
+    var id = decrypt(data.userId)
     return new Promise((resolve, reject) => {
         try{
             
             let claim = {
-                userId: data.userId,
+                userId: id,
                 expAt: moment(moment(),'LLLL').add(1,'days'),
-                emailId: data.emailId
+                emailId: email
             }
             let token = jwt.sign(claim, secretkey);
             resolve(token);

@@ -5,12 +5,13 @@ var router  = express.Router();
 const randomize  = require('randomatic');
 const {hashData, compareData} = require('./bcrypt');
 const {isEmpty}  = require('./check');
-const {generateToken, decodeToken} = require('./token')
+const {generateToken, decodeToken} = require('./token');
+const {encrypt, decrypt} = require('./cipherDecipher');
 var user = require('./userModel');
 let UserModel = mongoose.model('User');
 //SignUp API
 router.post('/signup', (req, res) => {
-    
+    var uniqueId  = randomize('0', 4);
     let userInputValidator = () =>{
         return new Promise((resolve, reject)=>{
             if(req.body.emailId&& req.body.name){
@@ -31,24 +32,46 @@ router.post('/signup', (req, res) => {
         });
     } //end validateUserInput
     
-    let userCreate  = () => {
-        var uniqueId  = randomize('0', 4);
+    //Exclusively checking for the id that is generated already exist or not
+    let checkUserIfExist = () => {
+        return new Promise((resolve, reject) => {
+            UserModel.findOne({userId:encrypt(uniqueId)})
+                .exec()
+                .then((userFound)=>{
+                    if(isEmpty(userFound)){
+                        console.log('resolve unique id');
+                        resolve(req);
+                    }else {
+                        reject('Same id has been generated again');
+                    }
+                })
+                .catch((err)=>{
+                    reject(err);
+                })
+        })
+    }
+
+    let userCreate  = () => {   
         return new Promise((resolve,reject)=>{
-            UserModel.findOne({emailId: req.body.emailId})
+            UserModel.findOne({emailId: encrypt(req.body.emailId)})
                 .exec()
                 .then((retrievedUserDetails)=>{
                     if(isEmpty(retrievedUserDetails)){
                         let newUser = new UserModel({
-                            userId: uniqueId,
-                            name: req.body.name,
-                            emailId: req.body.emailId,
+                            userId: encrypt(uniqueId),
+                            name: encrypt(req.body.name),
+                            emailId: encrypt(req.body.emailId),
                             password: hashData(req.body.password)
                         })
                         newUser.save()
                             .then((newUser)=> {
-                                console.log('saved user', newUser.emailId);
+                                // newUser = decrypt(newUser);
+                                console.log('saved user',newUser);
                                 if(!isEmpty(newUser)){
                                     delete newUser.password;
+                                    newUser.userId = decrypt(newUser.userId);
+                                    newUser.emailId = decrypt(newUser.emailId);
+                                    newUser.name = decrypt(newUser.name);
                                     resolve(newUser)
                                 } else {
                                     reject(generatejson(true, 'Something went wrong while saving the data.'));
@@ -67,6 +90,7 @@ router.post('/signup', (req, res) => {
     }
 
     userInputValidator(req,res)
+        .then(checkUserIfExist)
         .then(userCreate)
         .then((data) => {
             // delete data.__v;
@@ -79,18 +103,18 @@ router.post('/signup', (req, res) => {
 })
 
 //Signin API
-router.get('/signin', (req, res)=>{
+router.post('/signin', (req, res)=>{
     let findUser = () => {
         return new Promise((resolve,reject)=>{
             if(req.body.emailId) {
                 if(Email(req.body.emailId)){
-                    UserModel.findOne({emailId: req.body.emailId})
+                    UserModel.findOne({emailId: encrypt(req.body.emailId)})
                         .exec()
                         .then((userDetails)=>{
                             if(isEmpty(userDetails)){
-                                reject('User details not found')
+                                reject('User details not found with the email id')
                             }else {
-                                resolve(userDetails)
+                                resolve(userDetails);
                             }
                         })
                         .catch((err)=>{
@@ -128,12 +152,9 @@ router.get('/signin', (req, res)=>{
     }//password validator end 
 
     let tokenGenerate = (retrievedUser) => {
-        // console.log('generate token',retrievedUser)
         return new Promise((resolve, reject)=>{
             generateToken(retrievedUser)
             .then((tokenDetail)=>{
-                tokenDetail.userId = retrievedUser.userId
-                tokenDetail.userDetail = retrievedUser; 
                 resolve(tokenDetail);
             })
             .catch((err)=>{
@@ -146,7 +167,6 @@ router.get('/signin', (req, res)=>{
         .then(passwordValidator)
         .then(tokenGenerate)
         .then((loggedinUserToken) => {
-
             res.status(200).json({msg: 'login success', data: loggedinUserToken});
         })
         .catch((err) => {
@@ -155,11 +175,10 @@ router.get('/signin', (req, res)=>{
 });
 
 //Get API
-router.get('/getUserProfile', (req, res) => {
+router.post('/getUserProfile', (req, res) => {
     let userToken = () =>{
         return new Promise((resolve, reject) => {
             if(req.headers.authorization){
-                // console.log(req.headers.authorization);
                 resolve(req.headers.authorization);
             }else {
                 reject('Token is missing');
@@ -175,6 +194,7 @@ router.get('/getUserProfile', (req, res) => {
                     console.log('decodes',decoded);
                     delete decoded.iat;
                     delete decoded.expAt;
+                    console.log('Decoded user id from token',decoded.userId)
                     resolve(decoded.userId);
                 })
                 .catch((err)=>{
@@ -184,14 +204,18 @@ router.get('/getUserProfile', (req, res) => {
     }
 
     let findUser = (userid) => {
+        console.log('userid', userid);
         return new Promise((resolve, reject) => {
-            UserModel.findOne({userId: userid})
+            UserModel.findOne({userId: encrypt(userid)})
             .select('-password -__v -_id')
             .lean()
             .then((userDetails)=>{
                 if(isEmpty(userDetails)){
                     reject({err: true, msg: 'no user found'});
                 }else {
+                    userDetails.userId = decrypt(userDetails.userId)
+                    userDetails.name = decrypt(userDetails.name)
+                    userDetails.emailId = decrypt(userDetails.emailId)
                     resolve(userDetails);
                 }
             }).catch((err)=>{
@@ -211,3 +235,4 @@ router.get('/getUserProfile', (req, res) => {
 })
 
 module.exports = router;
+
